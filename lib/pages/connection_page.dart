@@ -331,22 +331,43 @@ class _ConnectionPageState extends State<ConnectionPage> {
                       ],
                     ),
                   const SizedBox(height: 32),
-                  ElevatedButton.icon(
-                    onPressed: _isConnecting ? null : _connect,
-                    icon: _isConnecting
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.link),
-                    label: Text(_isConnecting ? 'Connecting...' : 'Connect'),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      backgroundColor: Colors.blue,
-                      foregroundColor: Colors.white,
-                      textStyle: const TextStyle(fontSize: 18),
-                    ),
+                  Observer(
+                    builder: (_) {
+                      final isBluetoothMode =
+                          widget.store.selectedConnectionType ==
+                          ConnectionType.bluetooth;
+                      final canConnect =
+                          !_isConnecting &&
+                          (!isBluetoothMode ||
+                              widget.store.selectedBleDevice != null);
+
+                      return ElevatedButton.icon(
+                        onPressed: canConnect ? _connect : null,
+                        icon: _isConnecting
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.link),
+                        label: Text(
+                          _isConnecting
+                              ? 'Connecting...'
+                              : isBluetoothMode &&
+                                    widget.store.selectedBleDevice == null
+                              ? 'Select Device First'
+                              : 'Connect',
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          backgroundColor: Colors.blue,
+                          foregroundColor: Colors.white,
+                          textStyle: const TextStyle(fontSize: 18),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),

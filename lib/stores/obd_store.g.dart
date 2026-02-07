@@ -137,6 +137,24 @@ mixin _$ObdStore on _ObdStore, Store {
     });
   }
 
+  late final _$selectedBleDeviceAtom = Atom(
+    name: '_ObdStore.selectedBleDevice',
+    context: context,
+  );
+
+  @override
+  BluetoothDevice? get selectedBleDevice {
+    _$selectedBleDeviceAtom.reportRead();
+    return super.selectedBleDevice;
+  }
+
+  @override
+  set selectedBleDevice(BluetoothDevice? value) {
+    _$selectedBleDeviceAtom.reportWrite(value, super.selectedBleDevice, () {
+      super.selectedBleDevice = value;
+    });
+  }
+
   late final _$rpmAtom = Atom(name: '_ObdStore.rpm', context: context);
 
   @override
@@ -426,6 +444,18 @@ mixin _$ObdStore on _ObdStore, Store {
   }
 
   @override
+  void setSelectedBleDevice(BluetoothDevice? device) {
+    final _$actionInfo = _$_ObdStoreActionController.startAction(
+      name: '_ObdStore.setSelectedBleDevice',
+    );
+    try {
+      return super.setSelectedBleDevice(device);
+    } finally {
+      _$_ObdStoreActionController.endAction(_$actionInfo);
+    }
+  }
+
+  @override
   void stopMonitoring() {
     final _$actionInfo = _$_ObdStoreActionController.startAction(
       name: '_ObdStore.stopMonitoring',
@@ -495,6 +525,7 @@ isMonitoring: ${isMonitoring},
 selectedConnectionType: ${selectedConnectionType},
 address: ${address},
 port: ${port},
+selectedBleDevice: ${selectedBleDevice},
 rpm: ${rpm},
 speedKmh: ${speedKmh},
 coolantTempC: ${coolantTempC},

@@ -130,6 +130,7 @@ abstract class _ObdStore with Store {
       await _obdService.connect(config);
       isConnected = true;
     } catch (e) {
+      print('❌ Connection failed: $e');
       throw Exception('Connection failed: $e');
     }
   }

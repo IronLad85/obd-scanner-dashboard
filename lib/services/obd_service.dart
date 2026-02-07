@@ -68,33 +68,60 @@ class ObdService {
     }
 
     // Fallback: Check all pending commands (for non-standard responses)
+    // Skip command echoes (Mode 01 commands or AT commands without data)
+    final trimmedResponse = upperResponse.trim();
+    final isMode01Echo = RegExp(r'^01[0-9A-F]{2}$').hasMatch(trimmedResponse);
+    final isATCommandEcho = RegExp(r'^AT[A-Z0-9]+$').hasMatch(trimmedResponse);
+
+    if (isMode01Echo || isATCommandEcho) {
+      return; // Ignore command echoes
+    }
+
     for (final entry in _pendingCommands.entries) {
       final commandCode = entry.key;
       final completer = entry.value;
 
-      if (upperResponse.contains(commandCode.toUpperCase())) {
+      // Try to match response to command
+      bool shouldProcess = false;
+
+      // For ATRV (battery voltage), MUST have voltage pattern (digits + optional V)
+      if (commandCode == 'ATRV') {
+        shouldProcess = RegExp(r'\d+\.?\d*V?').hasMatch(upperResponse);
+      }
+      // For other commands, check if response contains the command code
+      else if (upperResponse.contains(commandCode.toUpperCase())) {
+        shouldProcess = true;
+      }
+
+      if (shouldProcess) {
         final command = ObdCommand.fromCode(commandCode);
         if (command != null) {
-          final parsedResponse = ObdParserService.parseResponse(
-            command,
-            rawResponse,
-          );
-          if (!_parsedResponseController.isClosed) {
-            try {
-              _parsedResponseController.add(parsedResponse);
-            } catch (e) {
-              // Ignore StreamSink errors if controller is closed
+          try {
+            final parsedResponse = ObdParserService.parseResponse(
+              command,
+              rawResponse,
+            );
+            if (!_parsedResponseController.isClosed) {
+              try {
+                _parsedResponseController.add(parsedResponse);
+              } catch (e) {
+                // Ignore StreamSink errors if controller is closed
+              }
             }
-          }
 
-          if (!completer.isCompleted) {
-            completer.complete(parsedResponse);
+            if (!completer.isCompleted) {
+              completer.complete(parsedResponse);
+            }
+
+            _pendingCommands.remove(commandCode);
+            _commandTimestamps.remove(commandCode);
+            break;
+          } catch (e) {
+            print('⚠️  Parse error for ${command.description}: $e');
+            // If parsing fails, continue checking other pending commands
+            continue;
           }
         }
-
-        _pendingCommands.remove(commandCode);
-        _commandTimestamps.remove(commandCode);
-        break;
       }
     }
   }

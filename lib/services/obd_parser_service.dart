@@ -70,6 +70,7 @@ class ObdParserService {
     final responseCode = (int.parse(command.substring(0, 2), radix: 16) + 0x40)
         .toRadixString(16)
         .toUpperCase();
+
     final parts = response.split(responseCode);
     if (parts.length < 2) return [];
 

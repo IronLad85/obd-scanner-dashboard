@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:mobx/mobx.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import '../services/obd_service.dart';
 import '../services/obd_command.dart';
 import '../services/obd_response.dart';
@@ -31,13 +32,16 @@ abstract class _ObdStore with Store {
   bool isMonitoring = false;
 
   @observable
-  ConnectionType selectedConnectionType = ConnectionType.tcp;
+  ConnectionType selectedConnectionType = ConnectionType.bluetooth;
 
   @observable
   String address = 'localhost';
 
   @observable
   String port = '35000';
+
+  @observable
+  BluetoothDevice? selectedBleDevice;
 
   // Live parameter observables - only trigger rebuilds when values change
   @observable
@@ -161,6 +165,11 @@ abstract class _ObdStore with Store {
   }
 
   @action
+  void setSelectedBleDevice(BluetoothDevice? device) {
+    selectedBleDevice = device;
+  }
+
+  @action
   Future<void> connect() async {
     try {
       ConnectionConfig config;
@@ -168,7 +177,10 @@ abstract class _ObdStore with Store {
       if (selectedConnectionType == ConnectionType.tcp) {
         config = ConnectionConfig.tcp(address: address, port: int.parse(port));
       } else {
-        config = ConnectionConfig.bluetooth(deviceId: 'DEVICE_ADDRESS');
+        if (selectedBleDevice == null) {
+          throw Exception('No Bluetooth device selected');
+        }
+        config = ConnectionConfig.bluetooth(bleDevice: selectedBleDevice);
       }
 
       await _obdService.connect(config);

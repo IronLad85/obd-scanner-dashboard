@@ -2,7 +2,7 @@ import 'dart:async';
 import 'connection_type.dart';
 import 'obd_connection_interface.dart';
 import 'tcp_connection_adapter.dart';
-import 'bluetooth_connection_adapter.dart';
+import 'ble_connection_adapter.dart';
 
 class ObdNetworkingService {
   ObdConnectionInterface? _currentConnection;
@@ -31,12 +31,10 @@ class ObdNetworkingService {
         break;
 
       case ConnectionType.bluetooth:
-        if (config.deviceId == null) {
-          throw Exception('Bluetooth connection requires device ID');
+        if (config.bleDevice == null) {
+          throw Exception('Bluetooth connection requires BLE device');
         }
-        _currentConnection = BluetoothConnectionAdapter(
-          deviceId: config.deviceId!,
-        );
+        _currentConnection = BleConnectionAdapter(device: config.bleDevice!);
         break;
     }
 
@@ -74,8 +72,8 @@ class ObdNetworkingService {
 
       if (_currentConnection is TcpConnectionAdapter) {
         (_currentConnection as TcpConnectionAdapter).dispose();
-      } else if (_currentConnection is BluetoothConnectionAdapter) {
-        (_currentConnection as BluetoothConnectionAdapter).dispose();
+      } else if (_currentConnection is BleConnectionAdapter) {
+        (_currentConnection as BleConnectionAdapter).dispose();
       }
 
       _currentConnection = null;

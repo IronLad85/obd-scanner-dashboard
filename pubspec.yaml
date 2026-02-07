@@ -32,12 +32,12 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.8
-  flutter_bluetooth_serial: ^0.4.0
   mobx: ^2.3.0
   flutter_mobx: ^2.2.0
   syncfusion_flutter_gauges: ^27.1.48
   google_fonts: ^6.1.0
   flutter_tts: ^4.0.2
+  flutter_blue_plus: ^1.32.12
   obd2_plugin:
     git:
       url: https://github.com/begaz/OBDII.git

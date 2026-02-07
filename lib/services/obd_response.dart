@@ -133,6 +133,21 @@ class AirflowResponse extends ObdResponse {
       'AirflowResponse(${gramsPerSecond.toStringAsFixed(2)} g/s)';
 }
 
+class FuelRateResponse extends ObdResponse {
+  final double litersPerHour;
+
+  FuelRateResponse({
+    required super.command,
+    required super.rawResponse,
+    required this.litersPerHour,
+    super.timestamp,
+  });
+
+  @override
+  String toString() =>
+      'FuelRateResponse(${litersPerHour.toStringAsFixed(2)} L/h)';
+}
+
 class FuelTrimResponse extends ObdResponse {
   final double percentage;
 

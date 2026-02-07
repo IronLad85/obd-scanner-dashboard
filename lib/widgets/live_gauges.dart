@@ -377,6 +377,697 @@ class ModernSpeedDisplay extends StatelessWidget {
   }
 }
 
+class ModernThrottleDisplay extends StatelessWidget {
+  final ObdStore store;
+
+  const ModernThrottleDisplay({super.key, required this.store});
+
+  @override
+  Widget build(BuildContext context) {
+    return Observer(
+      builder: (_) {
+        final throttle = store.throttlePercent ?? 0;
+
+        Color getColor() {
+          if (throttle < 30) return Colors.green;
+          if (throttle < 70) return Colors.amber;
+          return Colors.deepOrange;
+        }
+
+        return Container(
+          padding: const EdgeInsets.all(12),
+          height: 120,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                getColor().withOpacity(0.1),
+                getColor().withOpacity(0.05),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: getColor().withOpacity(0.3), width: 2),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.gas_meter, color: getColor(), size: 22),
+                  const SizedBox(height: 2),
+                  Text(
+                    'THROTTLE',
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '${throttle.toInt()}',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: getColor(),
+                      height: 1.0,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 2, left: 2),
+                    child: Text(
+                      '%',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class ModernLoadDisplay extends StatelessWidget {
+  final ObdStore store;
+
+  const ModernLoadDisplay({super.key, required this.store});
+
+  @override
+  Widget build(BuildContext context) {
+    return Observer(
+      builder: (_) {
+        final load = store.engineLoadPercent ?? 0;
+
+        Color getColor() {
+          if (load < 40) return Colors.green;
+          if (load < 75) return Colors.amber;
+          return Colors.redAccent;
+        }
+
+        return Container(
+          padding: const EdgeInsets.all(12),
+          height: 120,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                getColor().withOpacity(0.1),
+                getColor().withOpacity(0.05),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: getColor().withOpacity(0.3), width: 2),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.trending_up, color: getColor(), size: 22),
+                  const SizedBox(height: 2),
+                  Text(
+                    'LOAD',
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '${load.toInt()}',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: getColor(),
+                      height: 1.0,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 2, left: 2),
+                    child: Text(
+                      '%',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class ModernTempDisplay extends StatelessWidget {
+  final ObdStore store;
+
+  const ModernTempDisplay({super.key, required this.store});
+
+  @override
+  Widget build(BuildContext context) {
+    return Observer(
+      builder: (_) {
+        final temp = store.coolantTempC ?? 0;
+
+        Color getColor() {
+          if (temp < 75) return Colors.cyan;
+          if (temp < 95) return Colors.orange;
+          return Colors.red;
+        }
+
+        return Container(
+          padding: const EdgeInsets.all(12),
+          height: 120,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                getColor().withOpacity(0.1),
+                getColor().withOpacity(0.05),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: getColor().withOpacity(0.3), width: 2),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.thermostat, color: getColor(), size: 22),
+                  const SizedBox(height: 2),
+                  Text(
+                    'TEMP',
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '${temp.toInt()}',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: getColor(),
+                      height: 1.0,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 2, left: 2),
+                    child: Text(
+                      '°C',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class ModernOilTempDisplay extends StatelessWidget {
+  final ObdStore store;
+
+  const ModernOilTempDisplay({super.key, required this.store});
+
+  @override
+  Widget build(BuildContext context) {
+    return Observer(
+      builder: (_) {
+        final temp = store.oilTempC ?? 0;
+
+        Color getColor() {
+          if (temp < 90) return Colors.cyan;
+          if (temp < 110) return Colors.orange;
+          return Colors.red;
+        }
+
+        return Container(
+          padding: const EdgeInsets.all(12),
+          height: 120,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                getColor().withOpacity(0.1),
+                getColor().withOpacity(0.05),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: getColor().withOpacity(0.3), width: 2),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.water_drop, color: getColor(), size: 22),
+                  const SizedBox(height: 2),
+                  Text(
+                    'OIL',
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '${temp.toInt()}',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: getColor(),
+                      height: 1.0,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 2, left: 2),
+                    child: Text(
+                      '°C',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: getColor(),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class ModernMafDisplay extends StatelessWidget {
+  final ObdStore store;
+
+  const ModernMafDisplay({super.key, required this.store});
+
+  @override
+  Widget build(BuildContext context) {
+    return Observer(
+      builder: (_) {
+        final maf = store.mafGramsPerSecond ?? 0;
+
+        Color getColor() {
+          if (maf < 8) return Colors.cyan;
+          if (maf < 20) return Colors.green;
+          if (maf < 40) return Colors.orange;
+          return Colors.red;
+        }
+
+        return Container(
+          padding: const EdgeInsets.all(12),
+          height: 120,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                getColor().withOpacity(0.1),
+                getColor().withOpacity(0.05),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: getColor().withOpacity(0.3), width: 2),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.air, color: getColor(), size: 22),
+                  const SizedBox(height: 2),
+                  Text(
+                    'MAF',
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    maf.toStringAsFixed(1),
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: getColor(),
+                      height: 1.0,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 2, left: 2),
+                    child: Text(
+                      'g/s',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: getColor(),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class ModernIntakeAirTempDisplay extends StatelessWidget {
+  final ObdStore store;
+
+  const ModernIntakeAirTempDisplay({super.key, required this.store});
+
+  @override
+  Widget build(BuildContext context) {
+    return Observer(
+      builder: (_) {
+        final temp = store.intakeAirTempC ?? 0;
+
+        Color getColor() {
+          if (temp < 30) return Colors.cyan;
+          if (temp < 50) return Colors.green;
+          if (temp < 70) return Colors.orange;
+          return Colors.red;
+        }
+
+        return Container(
+          padding: const EdgeInsets.all(12),
+          height: 120,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                getColor().withOpacity(0.1),
+                getColor().withOpacity(0.05),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: getColor().withOpacity(0.3), width: 2),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.air, color: getColor(), size: 22),
+                  const SizedBox(height: 2),
+                  Text(
+                    'INTAKE',
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '${temp.toInt()}',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: getColor(),
+                      height: 1.0,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 2, left: 2),
+                    child: Text(
+                      '°C',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: getColor(),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class ModernFuelRateDisplay extends StatelessWidget {
+  final ObdStore store;
+
+  const ModernFuelRateDisplay({super.key, required this.store});
+
+  @override
+  Widget build(BuildContext context) {
+    return Observer(
+      builder: (_) {
+        final fuelRate = store.fuelRateLph ?? 0;
+
+        Color getColor() {
+          if (fuelRate < 3) return Colors.green;
+          if (fuelRate < 8) return Colors.cyan;
+          if (fuelRate < 15) return Colors.orange;
+          return Colors.red;
+        }
+
+        return Container(
+          padding: const EdgeInsets.all(12),
+          height: 120,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                getColor().withOpacity(0.1),
+                getColor().withOpacity(0.05),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: getColor().withOpacity(0.3), width: 2),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.local_gas_station, color: getColor(), size: 22),
+                  const SizedBox(height: 2),
+                  Text(
+                    'FUEL',
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    fuelRate.toStringAsFixed(1),
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: getColor(),
+                      height: 1.0,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 2, left: 2),
+                    child: Text(
+                      'L/h',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: getColor(),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class ModernBatteryDisplay extends StatelessWidget {
+  final ObdStore store;
+
+  const ModernBatteryDisplay({super.key, required this.store});
+
+  @override
+  Widget build(BuildContext context) {
+    return Observer(
+      builder: (_) {
+        final voltage = store.batteryVoltage ?? 0;
+
+        Color getColor() {
+          if (voltage >= 12.6) return Colors.green;
+          if (voltage >= 12.0) return Colors.amber;
+          return Colors.redAccent;
+        }
+
+        return Container(
+          padding: const EdgeInsets.all(12),
+          height: 120,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                getColor().withOpacity(0.1),
+                getColor().withOpacity(0.05),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: getColor().withOpacity(0.3), width: 2),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.battery_full, color: getColor(), size: 22),
+                  const SizedBox(height: 2),
+                  Text(
+                    'BATTERY',
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    voltage.toStringAsFixed(1),
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: getColor(),
+                      height: 1.0,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 2, left: 2),
+                    child: Text(
+                      'V',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
 // Circular Gauge Widgets using Syncfusion (deprecated - use Modern displays above)
 class CircularRpmGauge extends StatelessWidget {
   final ObdStore store;

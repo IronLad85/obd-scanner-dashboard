@@ -27,6 +27,28 @@ mixin _$ObdStore on _ObdStore, Store {
     });
   }
 
+  late final _$voiceAnnouncementsEnabledAtom = Atom(
+    name: '_ObdStore.voiceAnnouncementsEnabled',
+    context: context,
+  );
+
+  @override
+  bool get voiceAnnouncementsEnabled {
+    _$voiceAnnouncementsEnabledAtom.reportRead();
+    return super.voiceAnnouncementsEnabled;
+  }
+
+  @override
+  set voiceAnnouncementsEnabled(bool value) {
+    _$voiceAnnouncementsEnabledAtom.reportWrite(
+      value,
+      super.voiceAnnouncementsEnabled,
+      () {
+        super.voiceAnnouncementsEnabled = value;
+      },
+    );
+  }
+
   late final _$isInitializedAtom = Atom(
     name: '_ObdStore.isInitialized',
     context: context,
@@ -166,6 +188,24 @@ mixin _$ObdStore on _ObdStore, Store {
     });
   }
 
+  late final _$oilTempCAtom = Atom(
+    name: '_ObdStore.oilTempC',
+    context: context,
+  );
+
+  @override
+  double? get oilTempC {
+    _$oilTempCAtom.reportRead();
+    return super.oilTempC;
+  }
+
+  @override
+  set oilTempC(double? value) {
+    _$oilTempCAtom.reportWrite(value, super.oilTempC, () {
+      super.oilTempC = value;
+    });
+  }
+
   late final _$throttlePercentAtom = Atom(
     name: '_ObdStore.throttlePercent',
     context: context,
@@ -217,6 +257,60 @@ mixin _$ObdStore on _ObdStore, Store {
   set engineLoadPercent(double? value) {
     _$engineLoadPercentAtom.reportWrite(value, super.engineLoadPercent, () {
       super.engineLoadPercent = value;
+    });
+  }
+
+  late final _$mafGramsPerSecondAtom = Atom(
+    name: '_ObdStore.mafGramsPerSecond',
+    context: context,
+  );
+
+  @override
+  double? get mafGramsPerSecond {
+    _$mafGramsPerSecondAtom.reportRead();
+    return super.mafGramsPerSecond;
+  }
+
+  @override
+  set mafGramsPerSecond(double? value) {
+    _$mafGramsPerSecondAtom.reportWrite(value, super.mafGramsPerSecond, () {
+      super.mafGramsPerSecond = value;
+    });
+  }
+
+  late final _$intakeAirTempCAtom = Atom(
+    name: '_ObdStore.intakeAirTempC',
+    context: context,
+  );
+
+  @override
+  double? get intakeAirTempC {
+    _$intakeAirTempCAtom.reportRead();
+    return super.intakeAirTempC;
+  }
+
+  @override
+  set intakeAirTempC(double? value) {
+    _$intakeAirTempCAtom.reportWrite(value, super.intakeAirTempC, () {
+      super.intakeAirTempC = value;
+    });
+  }
+
+  late final _$fuelRateLphAtom = Atom(
+    name: '_ObdStore.fuelRateLph',
+    context: context,
+  );
+
+  @override
+  double? get fuelRateLph {
+    _$fuelRateLphAtom.reportRead();
+    return super.fuelRateLph;
+  }
+
+  @override
+  set fuelRateLph(double? value) {
+    _$fuelRateLphAtom.reportWrite(value, super.fuelRateLph, () {
+      super.fuelRateLph = value;
     });
   }
 
@@ -356,9 +450,46 @@ mixin _$ObdStore on _ObdStore, Store {
   }
 
   @override
+  void enableVoiceAnnouncements() {
+    final _$actionInfo = _$_ObdStoreActionController.startAction(
+      name: '_ObdStore.enableVoiceAnnouncements',
+    );
+    try {
+      return super.enableVoiceAnnouncements();
+    } finally {
+      _$_ObdStoreActionController.endAction(_$actionInfo);
+    }
+  }
+
+  @override
+  void disableVoiceAnnouncements() {
+    final _$actionInfo = _$_ObdStoreActionController.startAction(
+      name: '_ObdStore.disableVoiceAnnouncements',
+    );
+    try {
+      return super.disableVoiceAnnouncements();
+    } finally {
+      _$_ObdStoreActionController.endAction(_$actionInfo);
+    }
+  }
+
+  @override
+  void toggleVoiceAnnouncements() {
+    final _$actionInfo = _$_ObdStoreActionController.startAction(
+      name: '_ObdStore.toggleVoiceAnnouncements',
+    );
+    try {
+      return super.toggleVoiceAnnouncements();
+    } finally {
+      _$_ObdStoreActionController.endAction(_$actionInfo);
+    }
+  }
+
+  @override
   String toString() {
     return '''
 isConnected: ${isConnected},
+voiceAnnouncementsEnabled: ${voiceAnnouncementsEnabled},
 isInitialized: ${isInitialized},
 isMonitoring: ${isMonitoring},
 selectedConnectionType: ${selectedConnectionType},
@@ -367,9 +498,13 @@ port: ${port},
 rpm: ${rpm},
 speedKmh: ${speedKmh},
 coolantTempC: ${coolantTempC},
+oilTempC: ${oilTempC},
 throttlePercent: ${throttlePercent},
 batteryVoltage: ${batteryVoltage},
 engineLoadPercent: ${engineLoadPercent},
+mafGramsPerSecond: ${mafGramsPerSecond},
+intakeAirTempC: ${intakeAirTempC},
+fuelRateLph: ${fuelRateLph},
 responses: ${responses}
     ''';
   }

@@ -18,6 +18,8 @@ enum ObdCommand {
     'Engine Coolant Temperature',
   ),
   intakeAirTemp('010F', ObdResponseType.temperature, 'Intake Air Temperature'),
+  engineOilTemp('015C', ObdResponseType.temperature, 'Engine Oil Temperature'),
+  engineFuelRate('015E', ObdResponseType.fuelRate, 'Engine Fuel Rate'),
 
   throttlePosition('0111', ObdResponseType.percentage, 'Throttle Position'),
   mafAirFlow('0110', ObdResponseType.airflow, 'MAF Air Flow Rate'),
@@ -81,11 +83,14 @@ enum ObdCommand {
 
       // Medium priority (3-5 Hz): 200-300 ms
       case ObdCommand.calculatedEngineLoad:
+      case ObdCommand.mafAirFlow:
         return const Duration(milliseconds: 250);
 
       // Medium priority (1-2 Hz): 500-1000 ms
       case ObdCommand.engineCoolantTemp:
       case ObdCommand.intakeAirTemp:
+      case ObdCommand.engineOilTemp:
+      case ObdCommand.engineFuelRate:
         return const Duration(milliseconds: 700);
 
       // Low priority (0.5-1 Hz): 1-2 seconds
@@ -112,6 +117,7 @@ enum ObdResponseType {
   percentage,
   pressure,
   airflow,
+  fuelRate,
   fuelTrim,
   angle,
   bitmap,

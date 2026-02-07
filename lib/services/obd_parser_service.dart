@@ -31,6 +31,9 @@ class ObdParserService {
         case ObdResponseType.airflow:
           return _parseAirflow(command, rawResponse, cleanResponse);
 
+        case ObdResponseType.fuelRate:
+          return _parseFuelRate(command, rawResponse, cleanResponse);
+
         case ObdResponseType.fuelTrim:
           return _parseFuelTrim(command, rawResponse, cleanResponse);
 
@@ -214,6 +217,23 @@ class ObdParserService {
       );
     }
     throw Exception('Invalid airflow response: $clean');
+  }
+
+  static FuelRateResponse _parseFuelRate(
+    ObdCommand command,
+    String raw,
+    String clean,
+  ) {
+    final bytes = _extractBytes(clean, command.code);
+    if (bytes.length >= 2) {
+      final lph = ((bytes[0] * 256) + bytes[1]) * 0.05;
+      return FuelRateResponse(
+        command: command,
+        rawResponse: raw,
+        litersPerHour: lph,
+      );
+    }
+    throw Exception('Invalid fuel rate response: $clean');
   }
 
   static FuelTrimResponse _parseFuelTrim(

@@ -115,6 +115,60 @@ class _ConnectionPageState extends State<ConnectionPage> {
       }
     } catch (e) {
       if (mounted) {
+        final errorMessage = e.toString();
+
+        // Show error with troubleshooting tips
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Row(
+              children: [
+                Icon(Icons.error_outline, color: Colors.red),
+                SizedBox(width: 8),
+                Text('Connection Failed'),
+              ],
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    errorMessage,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Troubleshooting Tips:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text('• Make sure your car ignition is ON'),
+                  const Text('• Unplug and replug the OBD device'),
+                  const Text('• Move your phone closer to the device'),
+                  const Text('• Check if device is paired in phone settings'),
+                  const Text('• Try turning Bluetooth OFF and ON'),
+                  const Text('• Restart the OBD device (unplug for 30s)'),
+                  const Text('• Close other apps using Bluetooth'),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _connect(); // Retry
+                },
+                child: const Text('RETRY'),
+              ),
+            ],
+          ),
+        );
+
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('Connection failed: $e')));

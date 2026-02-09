@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'obd_connection_interface.dart';
 
 export 'package:flutter_blue_plus/flutter_blue_plus.dart' show BluetoothDevice;
@@ -37,34 +39,80 @@ class BleConnectionAdapter implements ObdConnectionInterface {
   @override
   Future<void> connect() async {
     try {
-      // Connect to device
+      // Request permissions before connecting
+      final hasPermission = await requestBluetoothPermissions();
+      if (!hasPermission) {
+        throw Exception('Bluetooth permissions not granted');
+      }
+
+      // Check if already connected
+      final currentState = await device.connectionState.first;
+      print('📱 Current connection state: $currentState');
+
+      // If already connected, disconnect first to start fresh
+      if (currentState == BluetoothConnectionState.connected) {
+        print('⚠️ Device already connected, disconnecting first...');
+        try {
+          await device.disconnect();
+          await Future.delayed(const Duration(milliseconds: 1000));
+        } catch (e) {
+          print('⚠️ Error during pre-disconnect: $e');
+        }
+      }
+
+      // Connect to device with increased timeout
+      print('🔄 Attempting to connect...');
       await device.connect(
-        timeout: const Duration(seconds: 15),
+        license: License.free,
+        timeout: const Duration(seconds: 30),
         autoConnect: false,
       );
 
-      // Wait a bit for connection to stabilize
-      await Future.delayed(const Duration(milliseconds: 500));
+      // Wait for connection to stabilize
+      await Future.delayed(const Duration(milliseconds: 1000));
+
+      // Verify we're actually connected
+      final connectedState = await device.connectionState.first;
+      if (connectedState != BluetoothConnectionState.connected) {
+        throw Exception(
+          'Connection state verification failed: $connectedState',
+        );
+      }
+
+      print('✅ Connection established, discovering services...');
 
       // Discover services
       final services = await device.discoverServices();
+      print('📡 Found ${services.length} services');
 
       // Find OBD service
       BluetoothService? obdService;
       for (final service in services) {
-        if (service.uuid.toString().toLowerCase() == _obdServiceUuid) {
+        final serviceUuid = service.uuid.toString().toLowerCase();
+        print('  Service: $serviceUuid');
+        if (serviceUuid == _obdServiceUuid) {
           obdService = service;
           break;
         }
       }
 
       if (obdService == null) {
-        throw Exception('OBD-II service not found on device');
+        print(
+          '❌ Available services: ${services.map((s) => s.uuid.toString()).join(", ")}',
+        );
+        throw Exception(
+          'OBD-II service ($_obdServiceUuid) not found on device',
+        );
       }
+
+      print('✅ OBD service found, looking for characteristics...');
 
       // Find write and notify characteristics
       for (final characteristic in obdService.characteristics) {
         final uuid = characteristic.uuid.toString().toLowerCase();
+        print(
+          '  Characteristic: $uuid (properties: ${characteristic.properties})',
+        );
 
         if (uuid == _writeCharacteristicUuid) {
           _writeCharacteristic = characteristic;
@@ -74,8 +122,13 @@ class BleConnectionAdapter implements ObdConnectionInterface {
       }
 
       if (_writeCharacteristic == null || _notifyCharacteristic == null) {
+        print(
+          '❌ Write char: $_writeCharacteristic, Notify char: $_notifyCharacteristic',
+        );
         throw Exception('Required BLE characteristics not found');
       }
+
+      print('✅ Characteristics found, subscribing to notifications...');
 
       // Subscribe to notifications
       await _notifyCharacteristic!.setNotifyValue(true);
@@ -87,10 +140,16 @@ class BleConnectionAdapter implements ObdConnectionInterface {
       );
 
       _isConnected = true;
-      print('✅ BLE connected successfully');
+      print('✅ BLE connected successfully and ready for communication');
     } catch (e) {
       _isConnected = false;
       print('❌ BLE connection failed: $e');
+
+      // Try to cleanup on failure
+      try {
+        await device.disconnect();
+      } catch (_) {}
+
       rethrow;
     }
   }
@@ -129,7 +188,9 @@ class BleConnectionAdapter implements ObdConnectionInterface {
 
   @override
   Future<void> disconnect() async {
+    print('🔌 Disconnecting from BLE device...');
     _isConnected = false;
+
     await _notificationSubscription?.cancel();
     _notificationSubscription = null;
 
@@ -138,14 +199,18 @@ class BleConnectionAdapter implements ObdConnectionInterface {
         await _notifyCharacteristic!.setNotifyValue(false);
       }
     } catch (e) {
-      print('Error disabling notifications: $e');
+      print('⚠️ Error disabling notifications: $e');
     }
 
     try {
       await device.disconnect();
+      print('✅ BLE device disconnected');
     } catch (e) {
-      print('Error disconnecting BLE device: $e');
+      print('⚠️ Error disconnecting BLE device: $e');
     }
+
+    _writeCharacteristic = null;
+    _notifyCharacteristic = null;
   }
 
   @override
@@ -169,6 +234,67 @@ class BleConnectionAdapter implements ObdConnectionInterface {
     }
   }
 
+  /// Request necessary Bluetooth permissions based on platform and Android version
+  static Future<bool> requestBluetoothPermissions() async {
+    if (!Platform.isAndroid) {
+      return true; // iOS handles permissions differently
+    }
+
+    try {
+      // For Android 12+ (API 31+), we need BLUETOOTH_SCAN and BLUETOOTH_CONNECT
+      if (await _isAndroid12OrHigher()) {
+        final scanStatus = await Permission.bluetoothScan.request();
+        final connectStatus = await Permission.bluetoothConnect.request();
+
+        if (scanStatus.isDenied || connectStatus.isDenied) {
+          print('❌ Bluetooth permissions denied');
+          return false;
+        }
+
+        if (scanStatus.isPermanentlyDenied ||
+            connectStatus.isPermanentlyDenied) {
+          print(
+            '❌ Bluetooth permissions permanently denied. Please enable in settings.',
+          );
+          await openAppSettings();
+          return false;
+        }
+
+        return scanStatus.isGranted && connectStatus.isGranted;
+      } else {
+        // For Android 11 and below, we need location permissions
+        final locationStatus = await Permission.locationWhenInUse.request();
+
+        if (locationStatus.isDenied) {
+          print('❌ Location permission denied');
+          return false;
+        }
+
+        if (locationStatus.isPermanentlyDenied) {
+          print(
+            '❌ Location permission permanently denied. Please enable in settings.',
+          );
+          await openAppSettings();
+          return false;
+        }
+
+        return locationStatus.isGranted;
+      }
+    } catch (e) {
+      print('❌ Error requesting Bluetooth permissions: $e');
+      return false;
+    }
+  }
+
+  /// Check if device is running Android 12 (API 31) or higher
+  static Future<bool> _isAndroid12OrHigher() async {
+    if (!Platform.isAndroid) return false;
+
+    // Check Android version through permission availability
+    // BLUETOOTH_SCAN is only available on Android 12+
+    return await Permission.bluetoothScan.status != PermissionStatus.restricted;
+  }
+
   /// Scan for nearby BLE devices
   static Future<List<BluetoothDevice>> scanForDevices({
     Duration timeout = const Duration(seconds: 10),
@@ -176,16 +302,25 @@ class BleConnectionAdapter implements ObdConnectionInterface {
     final devices = <BluetoothDevice>[];
     final Set<String> deviceIds = {};
 
+    // Request Bluetooth permissions first
+    final hasPermission = await requestBluetoothPermissions();
+    if (!hasPermission) {
+      throw Exception('Bluetooth permissions not granted');
+    }
+
     // Check if Bluetooth is on
     try {
       if (await FlutterBluePlus.isSupported == false) {
         throw Exception('Bluetooth not supported on this device');
       }
 
+      print('🔍 Starting BLE scan for ${timeout.inSeconds} seconds...');
+
       // Start scanning
       await FlutterBluePlus.startScan(
         timeout: timeout,
-        androidUsesFineLocation: true,
+        androidUsesFineLocation:
+            false, // Not needed for Android 12+ with neverForLocation
       );
 
       // Listen to scan results
@@ -195,6 +330,10 @@ class BleConnectionAdapter implements ObdConnectionInterface {
           if (!deviceIds.contains(deviceId)) {
             deviceIds.add(deviceId);
             devices.add(result.device);
+            final name = result.device.platformName.isNotEmpty
+                ? result.device.platformName
+                : 'Unknown';
+            print('📱 Found device: $name ($deviceId) - RSSI: ${result.rssi}');
           }
         }
       });
@@ -204,10 +343,13 @@ class BleConnectionAdapter implements ObdConnectionInterface {
       await subscription.cancel();
       await FlutterBluePlus.stopScan();
 
+      print('✅ Scan complete. Found ${devices.length} devices');
       return devices;
     } catch (e) {
       print('❌ BLE scan error: $e');
-      await FlutterBluePlus.stopScan();
+      try {
+        await FlutterBluePlus.stopScan();
+      } catch (_) {}
       rethrow;
     }
   }
@@ -219,6 +361,19 @@ class BleConnectionAdapter implements ObdConnectionInterface {
     } catch (e) {
       print('❌ Error getting connected devices: $e');
       return [];
+    }
+  }
+
+  /// Check if a specific device is already connected
+  static Future<bool> isDeviceConnected(BluetoothDevice device) async {
+    try {
+      final state = await device.connectionState.first.timeout(
+        const Duration(seconds: 2),
+      );
+      return state == BluetoothConnectionState.connected;
+    } catch (e) {
+      print('⚠️ Error checking device connection state: $e');
+      return false;
     }
   }
 
